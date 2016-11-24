@@ -85,5 +85,13 @@
 
     - name: Run certbot
       debug:
-        msg: "Run `certbot --apache` interactively to install a proper SSL certificate. Then add a cronjob to run `certbot renew --quiet` twice a day."
+        msg: "Run `certbot --apache` interactively to install a proper SSL certificate."
+      when: logserver_ssl|bool and logserver_certbot|bool
+
+    - name: Add certbot cron job
+      cron:
+        name: renew certbot ssl certs
+        minute: "23"
+        hour: "*/12"
+        job: "certbot renew --quiet && systemctl reload httpd"
       when: logserver_ssl|bool and logserver_certbot|bool
