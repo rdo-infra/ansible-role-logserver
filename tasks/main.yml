@@ -54,6 +54,11 @@
         src: wsgi.conf.j2
         dest: /etc/os_loganalyze/wsgi.conf
 
+    - name: Create os-loganalyze config file
+      template:
+        src: file_conditions.yaml.j2
+        dest: /etc/os_loganalyze/file_conditions.yaml
+
     - name: Install requirements for os-loganalyze
       pip:
         requirements: /var/www/cgi-bin/os-loganalyze/requirements.txt
