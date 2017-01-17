@@ -7,13 +7,14 @@ Listen 80
 
 <VirtualHost *:80>
 {% endif %}
-  DocumentRoot /var/www/html
+  DocumentRoot {{ logserver_document_root }}
   ServerName {{ ansible_fqdn }}
 
 {% if logserver_ssl|bool %}
   SSLEngine on
   SSLCertificateFile /etc/pki/tls/certs/localhost.crt
   SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
+  SSLCertificateChainFile /etc/pki/tls/certs/ca-bundle.crt
 {% endif %}
 
   # use Apache to compress the results afterwards, to save on the wire
@@ -32,7 +33,7 @@ Listen 80
   </Directory>
 
   RewriteEngine On
-  # rewrite txt.gz & console.html[.gz] files to map to our internal htmlify
+  # rewrite txt.gz, log.gz & console.html[.gz] files to map to our internal htmlify
   # wsgi app
   # PT, Pass-through:  to come back around and get picked up by the
   #                    WSGIScriptAlias
@@ -41,6 +42,7 @@ Listen 80
   #                    therefore ensure the rewrite doesn't trigger by
   #                    disallowing subrequests.
   RewriteRule ^/(.*\.txt\.gz)$ /htmlify/$1 [QSA,L,PT,NS]
+  RewriteRule ^/(.*\.log\.gz)$ /htmlify/$1 [QSA,L,PT,NS]
   RewriteRule ^/(.*console\.html(\.gz)?)$ /htmlify/$1 [QSA,L,PT,NS]
 
   # Check if the request exists as a file, directory or symbolic link

@@ -1,4 +1,5 @@
 logserver_repo: https://github.com/openstack-infra/os-loganalyze
+logserver_document_root: /var/www/html
 logserver_ssl: true
 logserver_certbot: true
 logserver_swift_container: logs
