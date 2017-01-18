@@ -1,21 +1,26 @@
 - become: true
   block:
-    - name: Upgrade all packages
-      yum:
-        name: "*"
-        state: latest
-
     - name: Install packages required for os-loganalyze
       yum:
         name: "{{ item }}"
         state: present
       with_items:
-        - epel-release
         - gcc
         - git
         - httpd
         - mod_wsgi
         - python-devel
+
+    - name: Enable EPEL
+      yum:
+        name: epel-release
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Also install python-pip after EPEL is enabled
+      yum:
+        name: python-pip
+        state: present
 
     - name: Install mod_ssl
       yum:
@@ -23,14 +28,9 @@
         state: present
       when: logserver_ssl|bool
 
-    - name: Also install python-pip after EPEL is enabled
+    - name: Install libselinux-python for the seboolean module
       yum:
-        name: "python-pip"
-        state: present
-
-    - name: Install libsemanage-python for the seboolean module
-      yum:
-        name: libsemanage-python
+        name: libselinux-python
         state: present
 
     - name: Let the os-loganalyze to connect to external swift server
@@ -41,7 +41,7 @@
 
     - name: Clone os-loganalyze from github
       git:
-        repo: {{ logserver_repo }}
+        repo: "{{ logserver_repo }}"
         dest: /var/www/cgi-bin/os-loganalyze
 
     - name: Create os-loganalyze config directory
@@ -59,6 +59,12 @@
         src: file_conditions.yaml.j2
         dest: /etc/os_loganalyze/file_conditions.yaml
 
+    - name: Install package required during the pip install
+      yum:
+        name: redhat-rpm-config
+        state: present
+      when: ansible_distribution == "Fedora"
+
     - name: Install requirements for os-loganalyze
       pip:
         requirements: /var/www/cgi-bin/os-loganalyze/requirements.txt
@@ -67,9 +73,6 @@
       command: python setup.py install
       args:
         chdir: /var/www/cgi-bin/os-loganalyze
-
-    - name: Turn off all other (default) apache site configs
-      command: find /etc/httpd/conf.d -type f -name '*.conf' -execdir mv {} {}-off ;
 
     - name: Create a config for apache
       template:
