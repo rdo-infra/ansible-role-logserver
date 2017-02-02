@@ -32,6 +32,8 @@ Listen 80
     Satisfy Any
   </Directory>
 
+  IndexOptions NameWidth=*
+
   RewriteEngine On
   # rewrite txt.gz, log.gz & console.html[.gz] files to map to our internal htmlify
   # wsgi app
