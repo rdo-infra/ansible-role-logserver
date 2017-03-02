@@ -79,6 +79,12 @@
         src: os-loganalyze.conf.j2
         dest: /etc/httpd/conf.d/os-loganalyze.conf
 
+    - name: Ensure default ssl config is removed
+      file:
+        path: /etc/httpd/conf.d/ssl.conf
+        state: absent
+      when: logserver_ssl|bool
+
     - name: Enable and restart apache
       service:
         name: httpd
